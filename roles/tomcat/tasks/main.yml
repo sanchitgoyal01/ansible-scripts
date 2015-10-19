@@ -1,0 +1,66 @@
+---
+
+- name: Add group "tomcat"
+  group: name={{ system.group }}
+
+- name: Add user "tomcat"
+  user: name={{ system.user }} group={{ system.group }} home={{ system.install_path }} shell=/bin/nologin createhome=no
+
+- name: Download installation files
+  get_url: url={{ item.download_url }} dest={{ item.install_path }}
+  with_items: 
+    - {download_url: "{{ tomcat.download_url }}", install_path: "{{ system.install_path }}.tar.gz"}
+    - {download_url: "{{ jdbc.mysql.download_url }}", install_path: "{{ install_root }}"}
+
+- name: Extract installation archives
+  unarchive: src={{ item }} dest={{ install_root }} copy=no 
+  with_items: 
+    - "{{ system.install_path }}.tar.gz"
+    - "{{ install_root }}mysql-connector-java-{{ jdbc.mysql.version }}.tar.gz"
+
+- name: Update permissions for tomcat group
+  file: path={{ system.install_path }}/conf group={{ system.group }} mode=0775 recurse=yes state=directory
+
+- name: Assign ownerships to tomcat user
+  file: owner={{ system.user }} recurse=yes state=directory path={{ item }}
+  with_items:
+    - "{{ system.install_path }}/work"
+    - "{{ system.install_path }}/temp"
+    - "{{ system.install_path }}/logs"
+
+- name: Setup access points for tomcat  
+  file: src={{ item.src }} dest={{ item.dest }} state=link
+  with_items: 
+    - { src: "{{ system.install_path }}/logs", dest: "/var/log/tomcat" }
+    - { src: "{{ system.install_path }}", dest: "{{ default_tomcat_home }}" }
+
+- name: Configure tomcat settings
+  template: src={{ item.src }} dest={{ item.dest }} 
+  with_items: 
+    - { src: 'tomcat.service', dest: '/etc/systemd/system/' }
+    - { src: 'server.xml', dest: '{{ system.install_path }}/conf/' }
+    - { src: 'context.xml', dest: '{{ system.install_path }}/conf/' }
+    - { src: 'tomcat-users.xml', dest: '{{ system.install_path }}/conf/tomcat-users.xml' }
+    - { src: 'iptables', dest: '/etc/sysconfig/iptables' }
+
+- name: Install MySQL driver  
+  command: 'cp {{ item.src }} {{ item.dest }}'
+  with_items:
+    - { src: "{{ install_root }}mysql-connector-java-{{ jdbc.mysql.version }}/mysql-connector-java-{{ jdbc.mysql.version }}-bin.jar", dest: "{{ jdbc.mysql.install_path }}" }
+
+- name: Reload systemmd
+  shell: systemctl daemon-reload
+
+- name: Restart services 
+  service: name={{ item }} state=restarted enabled=yes
+  with_items: 
+    - tomcat
+    - iptables
+
+- name: Clean up
+  file: state=absent path={{ item }}
+  with_items: 
+    - "{{ system.install_path }}.tar.gz"
+    - "{{ install_root }}mysql-connector-java-{{ jdbc.mysql.version }}.tar.gz"
+    - "{{ install_root }}mysql-connector-java-{{ jdbc.mysql.version }}"
+

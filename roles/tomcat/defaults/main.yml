@@ -1,0 +1,26 @@
+---
+
+install_root: /opt/
+
+tomcat:
+  version: 8.0.27
+  download_url: http://apache.mirrors.pair.com/tomcat/tomcat-8/v8.0.27/bin/apache-tomcat-8.0.27.tar.gz
+  ports:
+    http: "8080"
+    https: "8443"
+  user:
+    username: "eswa"
+    password: "root"
+    roles: "manager-gui,manager,manager-script,admin-gui,admin-script"
+  apps_home: "/var/warfiles"
+
+system:
+  install_path: "{{ install_root }}apache-tomcat-{{ tomcat.version }}"
+  user: tomcat
+  group: tomcat
+
+jdbc:
+  mysql:
+    version: "5.1.36"
+    download_url: "http://dev.mysql.com/get/Downloads/Connector-J/mysql-connector-java-5.1.36.tar.gz"
+    install_path: "{{ system.install_path }}/lib/"

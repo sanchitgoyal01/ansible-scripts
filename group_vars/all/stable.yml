@@ -1,0 +1,11 @@
+---
+
+app_root: "/opt/apps"
+tertiary_app_root: "/opt/tertiary"
+default_packages:
+    - vim
+    - unzip
+    - git
+    - python-httplib2
+    - curl
+

@@ -1,0 +1,8 @@
+# Managed by Ansible
+*nat
+:PREROUTING ACCEPT [0:0]
+:INPUT ACCEPT [3:192]
+:OUTPUT ACCEPT [1:76]
+:POSTROUTING ACCEPT [1:76]
+-A PREROUTING -p tcp -m tcp --dport 80 -j REDIRECT --to-ports 8080
+COMMIT

@@ -1,0 +1,19 @@
+---
+
+- name: Download Java
+  command: "wget -q -O {{ centos.java_archive }} --no-check-certificate --no-cookies --header 'Cookie: oraclelicense=accept-securebackup-cookie' {{ centos.download_url }} creates={{ centos.java_archive }}"
+
+- name: Unpack archive
+  unarchive: src={{ centos.java_archive }} dest={{ centos.download_folder }} creates={{ default_java_home }} copy=no 
+
+- name: Fix ownership
+  file: state=directory path={{ centos.java_name }} owner=root group=root recurse=yes
+
+- name: Assign as default java 
+  file: state=link src={{ centos.java_name }} dest={{ default_java_home }}
+
+- name: Make java available for system 
+  alternatives: name=java path={{ default_java_home }}/jre/bin/java link=/usr/bin/java
+
+- name: Clean up
+  file: state=absent path={{ centos.java_archive }}

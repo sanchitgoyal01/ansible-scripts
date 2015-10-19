@@ -1,0 +1,9 @@
+---
+
+- name: Running Ubuntu Installation
+  include: ubuntu-install.yml
+  when: ansible_distribution == 'Ubuntu' 
+
+- name: Running CentOS Installation
+  include: centos-install.yml
+  when: ansible_distribution == 'CentOS' 

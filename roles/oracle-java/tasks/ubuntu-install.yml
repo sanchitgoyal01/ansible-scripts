@@ -1,0 +1,24 @@
+---
+# NOTE OF JAVA VERSION
+#
+# This playbook uses the Oracle version of Java.  While
+# the OpenJDK would be possible, Most other systems at NDUS use
+# Oracle and so should we.
+- name: install python-pycurl so we can use apt_repository
+  apt: pkg=python-pycurl state=present
+
+- name: add webupd8 ppa
+  apt_repository: repo="ppa:webupd8team/java" update_cache="yes"
+
+- name: setup debconf selections for installer
+  shell: "echo oracle-java7-installer shared/accepted-oracle-license-v1-1 select true | sudo /usr/bin/debconf-set-selections"
+
+- debug: msg="The next command takes a while. It works just give it time"
+
+- name: install java version and the defaults
+  apt: pkg={{ item }} state=present
+  with_items:
+    - oracle-java7-installer
+    - oracle-java7-set-default
+
+   

@@ -1,0 +1,4 @@
+---
+
+  default_java_home: /usr/lib/java
+  default_tomcat_home: /opt/tomcat

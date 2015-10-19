@@ -1,0 +1,23 @@
+# Systemd unit file for tomcat
+[Unit]
+Description=Apache Tomcat Web Application Container
+After=syslog.target network.target
+
+[Service]
+Type=forking
+
+Environment=JAVA_HOME={{ default_java_home }}
+Environment=CATALINA_PID={{ system.install_path }}/temp/tomcat.pid
+Environment=CATALINA_HOME={{ system.install_path }}
+Environment=CATALINA_BASE={{ system.install_path }}
+Environment='CATALINA_OPTS=-Xms512M -Xmx1024M -server -XX:+UseConcMarkSweepGC -XX:+CMSClassUnloadingEnabled'
+Environment='JAVA_OPTS=-Djava.awt.headless=true -Djava.security.egd=file:/dev/./urandom'
+
+ExecStart={{ system.install_path }}/bin/startup.sh
+ExecStop=/bin/kill -15 $MAINPID
+
+User={{ system.user }}
+Group={{ system.group }}
+
+[Install]
+WantedBy=multi-user.target
